@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "filtry-tonoyana"
+version = "3.0.0rc1"
+description = "Anti-Hallucination & Semantic Safety Stack for LLM outputs"
+authors = [{name = "Karen Tonoyan", email = "kontakt@karentonoyan.pl"}]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["filtry_tonoyana/tests"]
