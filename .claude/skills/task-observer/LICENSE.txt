@@ -1,0 +1,17 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+This skill is licensed under the Creative Commons Attribution 4.0
+International License. You are free to share and adapt this material for
+any purpose, even commercially, as long as you give appropriate credit,
+provide a link to the license, and indicate if changes were made.
+
+Full legal text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+Original work: "task-observer" ("One Skill to Rule Them All") by Eoghan Henn
+(https://rebelytics.com), https://github.com/rebelytics/one-skill-to-rule-them-all
+
+This copy has been adapted for use as a Claude Code project skill in this
+repository (path conventions changed from a Cowork-style shared workspace
+folder to this repo's `.claude/` directory; Cowork-specific mechanics such
+as the read-only skill mount and `present_files` upload flow were replaced
+with plain git-diff review).
