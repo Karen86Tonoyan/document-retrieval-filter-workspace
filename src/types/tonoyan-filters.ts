@@ -151,6 +151,45 @@ export interface PromptEnhancementResult {
   processing_time_ms: number;
 }
 
+// ─── MONO Gateway ───
+export interface MonoTransformation {
+  pattern_name: string;
+  original_preview: string;
+  placeholder: string;
+  count: number;
+}
+
+export interface MonoGatewayResult {
+  raw_payload: string;
+  mono_payload: string;
+  transformations: MonoTransformation[];
+  sensitive_data_found: boolean;
+  attack_payload_blocked: boolean;
+  is_sanitized: boolean;
+  raw_size_bytes: number;
+  mono_size_bytes: number;
+  policy_applied: string[];
+  processing_time_ms: number;
+}
+
+export interface MonoDecodeResult {
+  response_clean: string;
+  leaked_data_detected: boolean;
+  leak_patterns: string[];
+  processing_time_ms: number;
+}
+
+// ─── Session Anomaly ───
+export type AnomalyType = 'block' | 'cerber_fail' | 'high_risk' | 'sensitive_data' | 'attack_detected';
+
+export interface SessionAnomaly {
+  id: string;
+  timestamp: string;
+  type: AnomalyType;
+  detail: string;
+  input_preview: string;
+}
+
 // ─── Full Pipeline Result ───
 export interface PipelineResult {
   id: string;
@@ -162,6 +201,8 @@ export interface PipelineResult {
   guardian: GuardianResult;
   core: CoreResult;
   enhancement?: PromptEnhancementResult;
+  mono_gateway?: MonoGatewayResult;
+  mono_decode?: MonoDecodeResult;
   final_decision: GuardianDecision;
   response_mode: ResponseMode;
   model_response?: string;

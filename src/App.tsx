@@ -10,6 +10,7 @@ import LiveAnalysisPage from "@/pages/LiveAnalysisPage";
 import BenchmarkPage from "@/pages/BenchmarkPage";
 import DualChatPage from "@/pages/DualChatPage";
 import IncidentPage from "@/pages/IncidentPage";
+import SecureScanPage from "@/pages/SecureScanPage";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/chat" element={<DualChatPage />} />
             <Route path="/benchmark" element={<BenchmarkPage />} />
             <Route path="/incidents" element={<IncidentPage />} />
+            <Route path="/scan" element={<SecureScanPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

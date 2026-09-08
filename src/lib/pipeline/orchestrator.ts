@@ -8,6 +8,7 @@ import { runCerber } from './cerber';
 import { runGuardian } from './guardian';
 import { runCore } from './core';
 import { enhancePrompt } from './prompt-enhancer';
+import { runMonoGateway, runMonoDecode } from './mono';
 import type { ModelAdapter } from '@/lib/adapters/types';
 
 function hashInput(input: string): string {
@@ -65,6 +66,9 @@ export async function runPipeline(input: string, options: PipelineOptions): Prom
     processing_time_ms: enhancementRaw.processing_time_ms,
   };
 
+  // === STAGE 3.7: MONO GATEWAY ===
+  const mono_gateway = runMonoGateway(input, lasuch, cerber, guardian);
+
   // === STAGE 4: CORE ===
   const core = runCore(input, lasuch, cerber, guardian);
 
@@ -73,6 +77,7 @@ export async function runPipeline(input: string, options: PipelineOptions): Prom
   let model_response: string | undefined;
   let provider_used: string | undefined;
   let model_used: string | undefined;
+  let mono_decode: import('@/types/tonoyan-filters').MonoDecodeResult | undefined;
 
   // Core can override Guardian in edge cases
   if (core.recommendation === 'block' && final_decision === 'PASS') {
@@ -95,14 +100,18 @@ export async function runPipeline(input: string, options: PipelineOptions): Prom
 
   if (options.mode !== 'benchmark' && (final_decision === 'PASS' || final_decision === 'LIMITED_PASS') && options.adapter) {
     try {
-      // USER input is NEVER modified — system guard goes in systemPrompt
+      // MONO: model receives sanitized payload, not raw input
+      const monoInput = mono_gateway.is_sanitized ? mono_gateway.mono_payload : input;
       const userInput = final_decision === 'LIMITED_PASS'
-        ? `[RESTRICTED MODE] ${input}`
-        : input;
+        ? `[RESTRICTED MODE] ${monoInput}`
+        : monoInput;
 
       model_response = await options.adapter.chat(userInput, effectiveSystemPrompt);
       provider_used = options.adapter.provider;
       model_used = options.adapter.modelId;
+
+      // MONO decode: check model response for data leakage
+      mono_decode = runMonoDecode(model_response);
     } catch (e) {
       model_response = `[ERROR] Model call failed: ${e instanceof Error ? e.message : 'Unknown error'}`;
     }
@@ -138,6 +147,8 @@ export async function runPipeline(input: string, options: PipelineOptions): Prom
     guardian,
     core,
     enhancement,
+    mono_gateway,
+    mono_decode,
     final_decision,
     response_mode,
     model_response,
