@@ -10,10 +10,12 @@ export type Lifecycle =
   | 'SHADOW_TEST'
   | 'REGRESSION_TEST'
   | 'VERIFIED'
+  | 'NEEDS_REVIEW'
   | 'PROMOTED'
   | 'ACTIVE'
   | 'REJECTED'
-  | 'RETIRED';
+  | 'RETIRED'
+  | 'INVALIDATED';
 
 export interface Finding {
   code: string;
@@ -102,6 +104,21 @@ export const tafeApi = {
       method: 'POST',
       body: JSON.stringify({ rule_key, to }),
     }),
+  me: () => call<MeResponse>('/me'),
+  dashboard: () => call<DashboardStats>('/dashboard'),
+  benchmarks: () => call<BenchmarkRegistry>('/benchmarks'),
+  syncBenchmarks: () => call<{ synced: number; dataset_hash: string }>('/benchmarks/sync', { method: 'POST' }),
+  goldsets: () => call<{ dataset_hash: string; cases: GoldsetCaseRow[] }>('/goldsets'),
+  shadow: () => call<{ observations: ShadowRow[]; summary: Record<string, { total: number; agreed: number; agreement: number }> }>('/shadow'),
+  runSuite: (rule_key: string) =>
+    call<SuiteResult>('/rules/suite', { method: 'POST', body: JSON.stringify({ rule_key }) }),
+  brainEvaluate: (rule_key: string) =>
+    call<BrainResult>('/brain/evaluate', { method: 'POST', body: JSON.stringify({ rule_key }) }),
+  proposeRule: (rule: ProposedRule) =>
+    call<{ rule: RuleRow; note: string }>('/propose/rule', { method: 'POST', body: JSON.stringify(rule) }),
+  submitMaterial: (cases: MaterialCase[]) =>
+    call<{ stored: number }>('/materials/goldset', { method: 'POST', body: JSON.stringify({ cases }) }),
+  materials: () => call<{ cases: GoldsetCaseRow[] }>('/materials/goldset'),
   patternAction: (action: 'candidate' | 'verify' | 'promote', pattern_id: string) =>
     call<{ pattern_id: string; status: Lifecycle }>(`/patterns/${action}`, {
       method: 'POST',
@@ -254,3 +271,139 @@ export const DECISION_STYLES: Record<Decision, string> = {
   HUMAN_REVIEW: 'border-primary/40 text-primary bg-primary/10',
   BLOCK: 'border-destructive/40 text-destructive bg-destructive/10',
 };
+
+
+export interface MeResponse {
+  user_id: string;
+  roles: string[];
+  is_admin: boolean;
+  is_provider: boolean;
+  capabilities: {
+    read: boolean;
+    run_tests: boolean;
+    propose: boolean;
+    submit_materials: boolean;
+    lifecycle: boolean;
+    promote: boolean;
+  };
+}
+
+export interface DashboardStats {
+  security_score: number;
+  utility_score: number;
+  adaptive_asr: number;
+  fp_rate: number;
+  active_rules: number;
+  candidates: number;
+  open_regressions: { rule_key: string; f1: number; fpr: number; created_at: string }[];
+  patterns_blocked: number;
+  promotions_passed: number;
+}
+
+export type BenchmarkStatus = 'REFERENCED' | 'INTEGRATED' | 'VERIFIED' | 'BROKEN' | 'DEPRECATED';
+
+export interface BenchmarkRow {
+  id?: string;
+  benchmark_id?: string;
+  name: string;
+  version: string;
+  source: string;
+  filter: FilterId | null;
+  attack_family: string;
+  runner: string;
+  scorer: string;
+  status: BenchmarkStatus;
+  dataset_hash?: string;
+  last_verified_at?: string | null;
+  notes?: string;
+}
+
+export interface BenchmarkRegistry {
+  registry_version: string;
+  benchmarks: BenchmarkRow[];
+  matrix: Record<FilterId, string[]>;
+  attack_families: { id: string; label: string; filter: FilterId; description: string }[];
+  defense_families: { id: string; label: string; filter: FilterId; description: string }[];
+}
+
+export interface GoldsetCaseRow {
+  id?: string;
+  case_id: string;
+  goldset: string;
+  filter: FilterId;
+  attack_family: string;
+  input: string;
+  expected_decision: Decision;
+  expected_findings: string[];
+  severity: Severity;
+  source: string;
+  tags: string[];
+  version: number;
+}
+
+export interface ShadowRow {
+  id: string;
+  request_id: string;
+  rule_key: string;
+  rule_version: number;
+  shadow_decision: Decision;
+  production_decision: Decision;
+  agreed: boolean;
+  would_change: boolean;
+  created_at: string;
+}
+
+export interface FullMetrics {
+  tp: number; tn: number; fp: number; fn: number;
+  precision: number; recall: number; specificity: number; f1: number;
+  attack_success_rate: number; adaptive_attack_success_rate: number;
+  false_positive_rate: number; false_negative_rate: number;
+  task_utility: number; latency_ms: number; coverage: number;
+  security_score: number; utility_score: number; stability_score: number; regression_score: number;
+}
+
+export interface SuiteResult {
+  run_id: string;
+  dataset_hash: string;
+  metrics: FullMetrics;
+  baseline: FullMetrics;
+  regression_passed: boolean;
+  rollbackId: string;
+  adaptive: {
+    passed: boolean;
+    adaptive_attack_success_rate: number;
+    rounds: { round: number; round_name: string; variants: number; blocked: number; attack_success_rate: number; passed: boolean }[];
+  };
+  gate: { passed: boolean; reason: string; checks: { id: string; label: string; passed: boolean; detail: string }[] };
+}
+
+export interface BrainResult {
+  recommendation: 'APPROVE' | 'REJECT' | 'HOLD';
+  rationale: string;
+  resulting_status: Lifecycle;
+  brain_connected: boolean;
+  payload: Record<string, unknown>;
+}
+
+export interface ProposedRule {
+  rule_key: string;
+  name: string;
+  description?: string;
+  filter: FilterId;
+  severity?: Severity;
+  action?: Decision;
+  conditions: { field: string; op: string; value: string }[];
+}
+
+export interface MaterialCase {
+  case_id: string;
+  goldset: 'benign' | 'malicious' | 'ambiguous' | 'tool' | 'privacy' | 'factuality' | 'drift' | 'adaptive';
+  filter: FilterId;
+  attack_family?: string;
+  input: string;
+  context?: Record<string, unknown>;
+  expected_decision: Decision;
+  expected_findings?: string[];
+  severity?: Severity;
+  tags?: string[];
+}

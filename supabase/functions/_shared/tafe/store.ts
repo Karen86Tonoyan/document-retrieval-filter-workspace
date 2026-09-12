@@ -106,6 +106,12 @@ export async function recordAudit(
   if (error) throw error;
 }
 
+export interface PatternMeta {
+  filter?: string;
+  severity?: string;
+  attack_family?: string;
+}
+
 /** Dead Pattern Registry: verified patterns short-circuit the expensive path while the context is unchanged. */
 export async function upsertPattern(
   db: SupabaseClient,
@@ -115,8 +121,10 @@ export async function upsertPattern(
   decision: Decision,
   context: Record<string, unknown> | undefined,
   source: string,
+  meta: PatternMeta = {},
 ): Promise<void> {
   const ctxHash = await contextHash(context);
+  const signature = `${ctxHash}:${meta.filter ?? 'F7'}:${source}`;
   const { data } = await db.from('tafe_patterns').select('*').eq('pattern_id', fp).maybeSingle();
   if (!data) {
     await db.from('tafe_patterns').insert({
@@ -126,13 +134,17 @@ export async function upsertPattern(
       source,
       context: context ?? {},
       context_hash: ctxHash,
+      context_signature: signature,
+      filter: meta.filter ?? null,
+      severity: meta.severity ?? 'MEDIUM',
+      attack_family: meta.attack_family ?? 'unknown',
       risk,
       decision,
       status: 'DETECTED',
     });
     return;
   }
-  const contextChanged = data.context_hash !== ctxHash;
+  const contextChanged = data.context_hash !== ctxHash || data.context_signature !== signature;
   await db
     .from('tafe_patterns')
     .update({
@@ -141,11 +153,44 @@ export async function upsertPattern(
       risk,
       decision,
       context_hash: ctxHash,
+      context_signature: signature,
+      filter: meta.filter ?? data.filter,
+      severity: meta.severity ?? data.severity,
+      attack_family: meta.attack_family ?? data.attack_family,
       // Context change invalidates a verified pattern — it must be re-verified.
-      status: contextChanged && ['VERIFIED', 'PROMOTED', 'ACTIVE'].includes(data.status) ? 'CANDIDATE' : data.status,
+      status: contextChanged && ['VERIFIED', 'PROMOTED', 'ACTIVE'].includes(data.status) ? 'INVALIDATED' : data.status,
       version: contextChanged ? (data.version ?? 1) + 1 : data.version ?? 1,
     })
     .eq('pattern_id', fp);
+}
+
+/** SHADOW MODE: store the hypothetical decision of non-enforcing rules for later comparison. */
+export async function recordShadowObservations(
+  db: SupabaseClient,
+  requestId: string,
+  observations: {
+    rule_key: string;
+    rule_version: number;
+    shadow_decision: Decision;
+    production_decision: Decision;
+    agreed: boolean;
+    would_change: boolean;
+    matched: string[];
+  }[],
+): Promise<void> {
+  if (!observations.length) return;
+  await db.from('tafe_shadow_evaluations').insert(
+    observations.map((o) => ({
+      request_id: requestId,
+      rule_key: o.rule_key,
+      rule_version: o.rule_version,
+      shadow_decision: o.shadow_decision,
+      production_decision: o.production_decision,
+      agreed: o.agreed,
+      would_change: o.would_change,
+      matched: o.matched.map((m) => scrubSecrets(m).slice(0, 300)),
+    })),
+  );
 }
 
 export async function lookupVerifiedPattern(

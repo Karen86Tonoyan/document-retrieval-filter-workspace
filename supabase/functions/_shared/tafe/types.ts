@@ -11,8 +11,10 @@ export type Lifecycle =
   | 'VERIFIED'
   | 'PROMOTED'
   | 'ACTIVE'
+  | 'NEEDS_REVIEW'
   | 'REJECTED'
-  | 'RETIRED';
+  | 'RETIRED'
+  | 'INVALIDATED';
 
 export type EvaluationKind = 'input' | 'output' | 'tool' | 'action';
 

@@ -16,9 +16,11 @@ import {
   lookupVerifiedPattern,
   recordAudit,
   recordIncident,
+  recordShadowObservations,
   updateAgentProfile,
   upsertPattern,
 } from './store.ts';
+import { applyShadowSafely, observeShadow } from './shadow.ts';
 
 export interface EvaluateOptions {
   db: SupabaseClient;
@@ -101,18 +103,29 @@ export async function evaluate(
       : gate.reason,
   };
 
+  // SHADOW MODE: non-enforcing rules record what they would have decided.
+  const ruleVersions = Object.fromEntries(rules.map((r) => [r.rule_key, r.version]));
+  const shadowObservations = observeShadow(ruleMatches, response.decision, ruleVersions);
+  // Guarantee: shadow observations never change the production decision.
+  response.decision = applyShadowSafely(response.decision, shadowObservations);
+
+  const worst = response.findings.find((f) => f.severity === 'CRITICAL') ?? response.findings[0];
+
   if (!dryRun) {
     await Promise.all([
       recordAudit(db, request, response, fp, actor).catch(() => undefined),
       recordIncident(db, request, response).catch(() => undefined),
       updateAgentProfile(db, request, response).catch(() => undefined),
+      recordShadowObservations(db, response.request_id, shadowObservations).catch(() => undefined),
       response.decision !== 'ALLOW'
-        ? upsertPattern(db, canonical, fp, response.risk, response.decision, request.context, request.kind).catch(
-            () => undefined,
-          )
+        ? upsertPattern(db, canonical, fp, response.risk, response.decision, request.context, request.kind, {
+            filter: worst?.filter ?? 'F7',
+            severity: worst?.severity ?? 'MEDIUM',
+            attack_family: (worst?.code ?? 'unknown').toLowerCase(),
+          }).catch(() => undefined)
         : Promise.resolve(),
     ]);
   }
 
-  return response;
+  return { ...response, shadow: shadowObservations } as EvaluationResponse & { shadow: typeof shadowObservations };
 }

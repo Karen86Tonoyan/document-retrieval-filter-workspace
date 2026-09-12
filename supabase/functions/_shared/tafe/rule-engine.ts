@@ -82,13 +82,15 @@ export function evaluateRules(req: EvaluationRequest, rules: Rule[], risk: numbe
 export const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   DETECTED: ['CANDIDATE', 'REJECTED'],
   CANDIDATE: ['SHADOW_TEST', 'REJECTED'],
-  SHADOW_TEST: ['REGRESSION_TEST', 'REJECTED'],
-  REGRESSION_TEST: ['VERIFIED', 'REJECTED'],
-  VERIFIED: ['PROMOTED', 'REJECTED'],
+  SHADOW_TEST: ['REGRESSION_TEST', 'NEEDS_REVIEW', 'REJECTED'],
+  REGRESSION_TEST: ['VERIFIED', 'NEEDS_REVIEW', 'REJECTED'],
+  VERIFIED: ['NEEDS_REVIEW', 'PROMOTED', 'REJECTED'],
+  NEEDS_REVIEW: ['PROMOTED', 'SHADOW_TEST', 'REJECTED'],
   PROMOTED: ['ACTIVE', 'REJECTED'],
   ACTIVE: ['RETIRED', 'SHADOW_TEST'],
   REJECTED: ['CANDIDATE'],
   RETIRED: ['CANDIDATE'],
+  INVALIDATED: ['CANDIDATE', 'REJECTED'],
 };
 
 export function canTransition(from: string, to: string): boolean {
