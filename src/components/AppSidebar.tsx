@@ -36,7 +36,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map(({ to, icon: Icon, label }) => {
+        {navItems.map(({ to, icon: Icon, key }) => {
           const isActive = location.pathname === to;
           return (
             <NavLink
@@ -49,16 +49,17 @@ export function AppSidebar() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              {t(key)}
             </NavLink>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-3">
+        <LanguageSwitcher />
         <div className="glass rounded-lg p-4">
           <p className="text-[10px] text-muted-foreground font-mono tracking-wide">LASUCH — CERBER — GUARDIAN</p>
-          <p className="text-[10px] text-muted-foreground mt-1">Model-agnostic pipeline</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{t('sidebar.footer')}</p>
         </div>
       </div>
     </aside>
