@@ -15,3 +15,4 @@
 - [ ] Logowanie na /auth: weryfikacja panelu admina i strony Diagnostyka
 - [ ] Klucze OpenAI, Groq, Mistral w sekretach Cloud
 - [ ] Wynik T9: podgląd kontekstu (np. „kłótnia, przemoc, groźba”) + wybór kontekstu z listy
+- [ ] Katalog najnowszych benchmarków ataków i form obrony (LongPIBench, MCPTox, AgentDojo, JailbreakBench, InjecAgent, FACTS) w panelu filtrów
