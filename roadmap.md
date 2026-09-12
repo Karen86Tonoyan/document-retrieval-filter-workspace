@@ -1,7 +1,7 @@
 # Roadmap
 
 ## W toku
-- [ ] TONOYAN ADAPTIVE FILTER ENGINE — panel UI (/tafe): Overview, F1–F7, Dead Pattern Registry, Candidate Rules, Regression, Incidents, Agents, Models, Permissions, Audit Log
+- [x] TONOYAN ADAPTIVE FILTER ENGINE — panel UI (/tafe): Overview, F1–F7, Ocena, Rejestr wzorców, Reguły kandydujące, Regresja, Incydenty, Agenci, Uprawnienia, Audyt, Benchmarki
   - [x] Model danych (tabele tafe_*, audit append-only, RLS + GRANT)
   - [x] Silnik F1–F7 + rule engine + pattern registry + regression + audit (supabase/functions/_shared/tafe)
   - [x] Integration API (edge function `tafe`) + klient `src/lib/tafe/api.ts`
