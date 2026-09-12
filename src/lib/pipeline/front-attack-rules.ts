@@ -131,9 +131,9 @@ export const FRONT_ATTACK_RULES: ExtendedDetectionRule[] = [
       /(переключись|отвечай|говори)\s+(на|по)/i,
       /(odpowiedz|pisz|mów)\s+(po|w)\s+(armeńsku|rosyjsku|chińsku|arabsku|hindi)/i,
       // Detect mixed script in single message (Latin + Cyrillic + CJK)
-      // Linear-time script-mixing detection (no `.*` backtracking on long inputs).
-      /(?=[\s\S]*[\u0400-\u04ff]{5,})[\s\S]*?[a-zA-Z]{5,}/,
-      /(?=[\s\S]*[\u4e00-\u9fff]{3,})[\s\S]*?[a-zA-Z]{5,}/,
+      // Anchored lookaheads: linear-time script-mixing detection (no catastrophic backtracking).
+      /^(?=[\s\S]*[\u0400-\u04ff]{5,})(?=[\s\S]*[a-zA-Z]{5,})/,
+      /^(?=[\s\S]*[\u4e00-\u9fff]{3,})(?=[\s\S]*[a-zA-Z]{5,})/,
     ],
     reason: 'Language switching — potential bypass via language change',
   },
