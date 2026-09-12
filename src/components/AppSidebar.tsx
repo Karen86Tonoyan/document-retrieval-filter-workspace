@@ -1,11 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Bot, Eye, BarChart3, AlertTriangle, MessageSquare, Brain, ShieldCheck, Filter, Sparkles, BookOpen, Activity } from 'lucide-react';
+import { LayoutDashboard, Bot, Eye, BarChart3, AlertTriangle, MessageSquare, Brain, Shield, ShieldCheck, Filter, Sparkles, BookOpen, Activity } from 'lucide-react';
 import alfaWolfLogo from '@/assets/alfa-wolf-logo.png';
 import { useI18n } from '@/lib/i18n';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, key: 'nav.dashboard' },
+  { to: '/tafe', icon: Shield, key: 'nav.tafe' },
   { to: '/rc21', icon: ShieldCheck, key: 'nav.rc21' },
   { to: '/filters', icon: Filter, key: 'nav.filters' },
   { to: '/spec', icon: BookOpen, key: 'nav.spec' },
