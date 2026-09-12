@@ -31,3 +31,8 @@
 - [x] RLS + autoryzacja endpointów TAFE wg roli
 - [x] UI: widoczność akcji zależna od roli
 - [x] Pełny test programu (typecheck + vitest + smoke UI; naprawiony boot error edge function)
+
+- [x] Naprawiono boot error edge function `tafe` (brakujący eksport maxDecision)
+- [x] Naprawiono ReDoS (catastrophic backtracking) w regułach LANGUAGE_SWITCHING — długie wejścia liczone w ms zamiast sekund
+- [x] Admin UI: nadawanie ról provider/guest
+- [ ] Uwaga: linter zgłasza `has_role` jako SECURITY DEFINER dostępną dla zalogowanych — wymagane przez polityki RLS, ryzyko zaakceptowane
