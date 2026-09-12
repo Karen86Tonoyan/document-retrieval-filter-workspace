@@ -1,6 +1,6 @@
 // F7 — FINAL ACTION GATE: highest priority, aggregates F1–F6. Nothing bypasses it.
-import type { Decision, FilterResult, Finding, RuleMatch } from './types.ts';
-import { combineRisk, maxDecision, severityWeight } from './util.ts';
+import { maxDecision, type Decision, type FilterResult, type Finding, type RuleMatch } from './types.ts';
+import { combineRisk, severityWeight } from './util.ts';
 
 export interface GateInput {
   filters: FilterResult[];

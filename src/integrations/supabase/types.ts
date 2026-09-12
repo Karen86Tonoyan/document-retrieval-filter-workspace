@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      tafe_adaptive_runs: {
+        Row: {
+          attack_success_rate: number
+          blocked: number
+          created_at: string
+          details: Json
+          id: string
+          passed: boolean
+          round: number
+          round_name: string
+          rule_key: string
+          rule_version: number
+          run_id: string
+          variants: number
+        }
+        Insert: {
+          attack_success_rate?: number
+          blocked?: number
+          created_at?: string
+          details?: Json
+          id?: string
+          passed?: boolean
+          round: number
+          round_name: string
+          rule_key: string
+          rule_version?: number
+          run_id: string
+          variants?: number
+        }
+        Update: {
+          attack_success_rate?: number
+          blocked?: number
+          created_at?: string
+          details?: Json
+          id?: string
+          passed?: boolean
+          round?: number
+          round_name?: string
+          rule_key?: string
+          rule_version?: number
+          run_id?: string
+          variants?: number
+        }
+        Relationships: []
+      }
       tafe_agent_profiles: {
         Row: {
           agent_id: string
@@ -62,7 +107,11 @@ export type Database = {
           after_hash: string | null
           agent_id: string
           before_hash: string | null
+          benchmark_version: string | null
+          candidate_version: number | null
+          dataset_hash: string | null
           decision: Database["public"]["Enums"]["tafe_decision"]
+          engine_version: string
           evidence: Json
           filter: Database["public"]["Enums"]["tafe_filter"] | null
           id: string
@@ -71,7 +120,10 @@ export type Database = {
           request_id: string
           resource: string | null
           risk_score: number
+          rollback_id: string | null
           rule_id: string | null
+          ruleset_hash: string | null
+          run_id: string | null
           session_id: string
           tool: string | null
           ts: string
@@ -81,7 +133,11 @@ export type Database = {
           after_hash?: string | null
           agent_id?: string
           before_hash?: string | null
+          benchmark_version?: string | null
+          candidate_version?: number | null
+          dataset_hash?: string | null
           decision: Database["public"]["Enums"]["tafe_decision"]
+          engine_version?: string
           evidence?: Json
           filter?: Database["public"]["Enums"]["tafe_filter"] | null
           id?: string
@@ -90,7 +146,10 @@ export type Database = {
           request_id: string
           resource?: string | null
           risk_score?: number
+          rollback_id?: string | null
           rule_id?: string | null
+          ruleset_hash?: string | null
+          run_id?: string | null
           session_id?: string
           tool?: string | null
           ts?: string
@@ -100,7 +159,11 @@ export type Database = {
           after_hash?: string | null
           agent_id?: string
           before_hash?: string | null
+          benchmark_version?: string | null
+          candidate_version?: number | null
+          dataset_hash?: string | null
           decision?: Database["public"]["Enums"]["tafe_decision"]
+          engine_version?: string
           evidence?: Json
           filter?: Database["public"]["Enums"]["tafe_filter"] | null
           id?: string
@@ -109,10 +172,154 @@ export type Database = {
           request_id?: string
           resource?: string | null
           risk_score?: number
+          rollback_id?: string | null
           rule_id?: string | null
+          ruleset_hash?: string | null
+          run_id?: string | null
           session_id?: string
           tool?: string | null
           ts?: string
+        }
+        Relationships: []
+      }
+      tafe_benchmarks: {
+        Row: {
+          attack_family: string
+          benchmark_id: string
+          created_at: string
+          dataset_hash: string
+          filter: Database["public"]["Enums"]["tafe_filter"] | null
+          id: string
+          last_verified_at: string | null
+          name: string
+          notes: string
+          runner: string
+          scorer: string
+          source: string
+          status: Database["public"]["Enums"]["tafe_benchmark_status"]
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          attack_family?: string
+          benchmark_id: string
+          created_at?: string
+          dataset_hash?: string
+          filter?: Database["public"]["Enums"]["tafe_filter"] | null
+          id?: string
+          last_verified_at?: string | null
+          name: string
+          notes?: string
+          runner?: string
+          scorer?: string
+          source?: string
+          status?: Database["public"]["Enums"]["tafe_benchmark_status"]
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          attack_family?: string
+          benchmark_id?: string
+          created_at?: string
+          dataset_hash?: string
+          filter?: Database["public"]["Enums"]["tafe_filter"] | null
+          id?: string
+          last_verified_at?: string | null
+          name?: string
+          notes?: string
+          runner?: string
+          scorer?: string
+          source?: string
+          status?: Database["public"]["Enums"]["tafe_benchmark_status"]
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      tafe_brain_evaluations: {
+        Row: {
+          candidate_id: string
+          candidate_version: number
+          created_at: string
+          id: string
+          payload: Json
+          rationale: string
+          recommendation: string
+          resulting_status: Database["public"]["Enums"]["tafe_lifecycle"]
+        }
+        Insert: {
+          candidate_id: string
+          candidate_version?: number
+          created_at?: string
+          id?: string
+          payload?: Json
+          rationale?: string
+          recommendation?: string
+          resulting_status?: Database["public"]["Enums"]["tafe_lifecycle"]
+        }
+        Update: {
+          candidate_id?: string
+          candidate_version?: number
+          created_at?: string
+          id?: string
+          payload?: Json
+          rationale?: string
+          recommendation?: string
+          resulting_status?: Database["public"]["Enums"]["tafe_lifecycle"]
+        }
+        Relationships: []
+      }
+      tafe_goldset_cases: {
+        Row: {
+          attack_family: string
+          case_id: string
+          context: Json
+          created_at: string
+          expected_decision: Database["public"]["Enums"]["tafe_decision"]
+          expected_findings: Json
+          filter: Database["public"]["Enums"]["tafe_filter"]
+          goldset: string
+          id: string
+          input: string
+          severity: Database["public"]["Enums"]["tafe_severity"]
+          source: string
+          tags: string[]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          attack_family?: string
+          case_id: string
+          context?: Json
+          created_at?: string
+          expected_decision?: Database["public"]["Enums"]["tafe_decision"]
+          expected_findings?: Json
+          filter: Database["public"]["Enums"]["tafe_filter"]
+          goldset?: string
+          id?: string
+          input?: string
+          severity?: Database["public"]["Enums"]["tafe_severity"]
+          source?: string
+          tags?: string[]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          attack_family?: string
+          case_id?: string
+          context?: Json
+          created_at?: string
+          expected_decision?: Database["public"]["Enums"]["tafe_decision"]
+          expected_findings?: Json
+          filter?: Database["public"]["Enums"]["tafe_filter"]
+          goldset?: string
+          id?: string
+          input?: string
+          severity?: Database["public"]["Enums"]["tafe_severity"]
+          source?: string
+          tags?: string[]
+          updated_at?: string
+          version?: number
         }
         Relationships: []
       }
@@ -160,11 +367,14 @@ export type Database = {
       }
       tafe_patterns: {
         Row: {
+          attack_family: string
           canonical_form: string
           context: Json
           context_hash: string
+          context_signature: string
           decision: Database["public"]["Enums"]["tafe_decision"] | null
           false_positive_count: number
+          filter: Database["public"]["Enums"]["tafe_filter"] | null
           fingerprint: string
           first_seen: string
           hit_count: number
@@ -172,16 +382,22 @@ export type Database = {
           last_seen: string
           pattern_id: string
           risk: number
+          rule_version: number
+          severity: Database["public"]["Enums"]["tafe_severity"]
           source: string
           status: Database["public"]["Enums"]["tafe_lifecycle"]
+          verified_count: number
           version: number
         }
         Insert: {
+          attack_family?: string
           canonical_form: string
           context?: Json
           context_hash?: string
+          context_signature?: string
           decision?: Database["public"]["Enums"]["tafe_decision"] | null
           false_positive_count?: number
+          filter?: Database["public"]["Enums"]["tafe_filter"] | null
           fingerprint: string
           first_seen?: string
           hit_count?: number
@@ -189,16 +405,22 @@ export type Database = {
           last_seen?: string
           pattern_id: string
           risk?: number
+          rule_version?: number
+          severity?: Database["public"]["Enums"]["tafe_severity"]
           source?: string
           status?: Database["public"]["Enums"]["tafe_lifecycle"]
+          verified_count?: number
           version?: number
         }
         Update: {
+          attack_family?: string
           canonical_form?: string
           context?: Json
           context_hash?: string
+          context_signature?: string
           decision?: Database["public"]["Enums"]["tafe_decision"] | null
           false_positive_count?: number
+          filter?: Database["public"]["Enums"]["tafe_filter"] | null
           fingerprint?: string
           first_seen?: string
           hit_count?: number
@@ -206,63 +428,162 @@ export type Database = {
           last_seen?: string
           pattern_id?: string
           risk?: number
+          rule_version?: number
+          severity?: Database["public"]["Enums"]["tafe_severity"]
           source?: string
           status?: Database["public"]["Enums"]["tafe_lifecycle"]
+          verified_count?: number
           version?: number
+        }
+        Relationships: []
+      }
+      tafe_promotions: {
+        Row: {
+          actor: string | null
+          benchmark_version: string
+          candidate_version: number
+          checks: Json
+          created_at: string
+          dataset_hash: string
+          engine_version: string
+          id: string
+          metrics: Json
+          passed: boolean
+          reason: string
+          rollback_id: string | null
+          rule_key: string
+          ruleset_hash: string
+          run_id: string
+        }
+        Insert: {
+          actor?: string | null
+          benchmark_version?: string
+          candidate_version?: number
+          checks?: Json
+          created_at?: string
+          dataset_hash?: string
+          engine_version?: string
+          id?: string
+          metrics?: Json
+          passed?: boolean
+          reason?: string
+          rollback_id?: string | null
+          rule_key: string
+          ruleset_hash?: string
+          run_id: string
+        }
+        Update: {
+          actor?: string | null
+          benchmark_version?: string
+          candidate_version?: number
+          checks?: Json
+          created_at?: string
+          dataset_hash?: string
+          engine_version?: string
+          id?: string
+          metrics?: Json
+          passed?: boolean
+          reason?: string
+          rollback_id?: string | null
+          rule_key?: string
+          ruleset_hash?: string
+          run_id?: string
         }
         Relationships: []
       }
       tafe_regression_runs: {
         Row: {
+          adaptive_attack_success_rate: number
+          attack_success_rate: number
           baseline_f1: number
+          coverage: number
           created_at: string
+          dataset_hash: string
           details: Json
           f1: number
+          false_negative_rate: number
+          false_positive_rate: number
           fn: number
           fp: number
           goldset: string
           id: string
+          latency_ms: number
           passed: boolean
           precision: number
           recall: number
+          regression_score: number
           rule_key: string
           rule_version: number
+          run_id: string
+          security_score: number
+          specificity: number
+          stability_score: number
+          task_utility: number
           tn: number
           tp: number
+          utility_score: number
         }
         Insert: {
+          adaptive_attack_success_rate?: number
+          attack_success_rate?: number
           baseline_f1?: number
+          coverage?: number
           created_at?: string
+          dataset_hash?: string
           details?: Json
           f1?: number
+          false_negative_rate?: number
+          false_positive_rate?: number
           fn?: number
           fp?: number
           goldset?: string
           id?: string
+          latency_ms?: number
           passed?: boolean
           precision?: number
           recall?: number
+          regression_score?: number
           rule_key: string
           rule_version?: number
+          run_id?: string
+          security_score?: number
+          specificity?: number
+          stability_score?: number
+          task_utility?: number
           tn?: number
           tp?: number
+          utility_score?: number
         }
         Update: {
+          adaptive_attack_success_rate?: number
+          attack_success_rate?: number
           baseline_f1?: number
+          coverage?: number
           created_at?: string
+          dataset_hash?: string
           details?: Json
           f1?: number
+          false_negative_rate?: number
+          false_positive_rate?: number
           fn?: number
           fp?: number
           goldset?: string
           id?: string
+          latency_ms?: number
           passed?: boolean
           precision?: number
           recall?: number
+          regression_score?: number
           rule_key?: string
           rule_version?: number
+          run_id?: string
+          security_score?: number
+          specificity?: number
+          stability_score?: number
+          task_utility?: number
           tn?: number
           tp?: number
+          utility_score?: number
         }
         Relationships: []
       }
@@ -323,6 +644,45 @@ export type Database = {
         }
         Relationships: []
       }
+      tafe_shadow_evaluations: {
+        Row: {
+          agreed: boolean
+          created_at: string
+          id: string
+          matched: Json
+          production_decision: Database["public"]["Enums"]["tafe_decision"]
+          request_id: string
+          rule_key: string
+          rule_version: number
+          shadow_decision: Database["public"]["Enums"]["tafe_decision"]
+          would_change: boolean
+        }
+        Insert: {
+          agreed?: boolean
+          created_at?: string
+          id?: string
+          matched?: Json
+          production_decision: Database["public"]["Enums"]["tafe_decision"]
+          request_id: string
+          rule_key: string
+          rule_version?: number
+          shadow_decision: Database["public"]["Enums"]["tafe_decision"]
+          would_change?: boolean
+        }
+        Update: {
+          agreed?: boolean
+          created_at?: string
+          id?: string
+          matched?: Json
+          production_decision?: Database["public"]["Enums"]["tafe_decision"]
+          request_id?: string
+          rule_key?: string
+          rule_version?: number
+          shadow_decision?: Database["public"]["Enums"]["tafe_decision"]
+          would_change?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -358,7 +718,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "provider" | "guest"
+      tafe_benchmark_status:
+        | "REFERENCED"
+        | "INTEGRATED"
+        | "VERIFIED"
+        | "BROKEN"
+        | "DEPRECATED"
       tafe_decision: "ALLOW" | "WARN" | "HOLD" | "HUMAN_REVIEW" | "BLOCK"
       tafe_filter: "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7"
       tafe_lifecycle:
@@ -371,6 +737,8 @@ export type Database = {
         | "ACTIVE"
         | "REJECTED"
         | "RETIRED"
+        | "NEEDS_REVIEW"
+        | "INVALIDATED"
       tafe_severity: "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
     }
     CompositeTypes: {
@@ -499,7 +867,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "provider", "guest"],
+      tafe_benchmark_status: [
+        "REFERENCED",
+        "INTEGRATED",
+        "VERIFIED",
+        "BROKEN",
+        "DEPRECATED",
+      ],
       tafe_decision: ["ALLOW", "WARN", "HOLD", "HUMAN_REVIEW", "BLOCK"],
       tafe_filter: ["F1", "F2", "F3", "F4", "F5", "F6", "F7"],
       tafe_lifecycle: [
@@ -512,6 +887,8 @@ export const Constants = {
         "ACTIVE",
         "REJECTED",
         "RETIRED",
+        "NEEDS_REVIEW",
+        "INVALIDATED",
       ],
       tafe_severity: ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"],
     },

@@ -38,6 +38,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import TafePhase2 from '@/components/tafe/TafePhase2';
+import { type MeResponse } from '@/lib/tafe/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
@@ -132,6 +134,7 @@ export default function TafePage() {
   const [agents, setAgents] = useState<AgentProfileRow[]>([]);
   const [runs, setRuns] = useState<RegressionRunRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [me, setMe] = useState<MeResponse | null>(null);
 
   const [form, setForm] = useState({
     agent: 'default',
@@ -159,6 +162,11 @@ export default function TafePage() {
     setAudit((a.data ?? []) as unknown as AuditRow[]);
     setAgents((ag.data ?? []) as unknown as AgentProfileRow[]);
     setRuns((rr.data ?? []) as unknown as RegressionRunRow[]);
+    try {
+      setMe(await tafeApi.me());
+    } catch {
+      setMe(null);
+    }
   }, []);
 
   useEffect(() => {
@@ -280,6 +288,7 @@ export default function TafePage() {
           <TabsTrigger value="permissions">{t('permissions')}</TabsTrigger>
           <TabsTrigger value="audit">{t('audit')}</TabsTrigger>
           <TabsTrigger value="benchmarks">{t('benchmarks')}</TabsTrigger>
+          <TabsTrigger value="phase2">Phase 2</TabsTrigger>
         </TabsList>
 
         {/* OVERVIEW */}
@@ -614,6 +623,16 @@ export default function TafePage() {
         </TabsContent>
 
         {/* BENCHMARKS */}
+        <TabsContent value="phase2" className="mt-4">
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Rola:</span>
+            {(me?.roles.length ? me.roles : ['guest']).map((r) => (
+              <Badge key={r} variant="outline">{r}</Badge>
+            ))}
+          </div>
+          <TafePhase2 me={me} rules={rules} />
+        </TabsContent>
+
         <TabsContent value="benchmarks" className="mt-4 space-y-3">
           <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
             {t('reviewed')}: {BENCHMARK_REVIEW_DATE}
