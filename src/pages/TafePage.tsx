@@ -38,6 +38,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import TafeRuleAnalytics from '@/components/tafe/TafeRuleAnalytics';
+import TafeN8nPanel from '@/components/tafe/TafeN8nPanel';
 import TafePhase2 from '@/components/tafe/TafePhase2';
 import { type MeResponse } from '@/lib/tafe/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -288,6 +290,8 @@ export default function TafePage() {
           <TabsTrigger value="permissions">{t('permissions')}</TabsTrigger>
           <TabsTrigger value="audit">{t('audit')}</TabsTrigger>
           <TabsTrigger value="benchmarks">{t('benchmarks')}</TabsTrigger>
+          <TabsTrigger value="analytics">{lang === 'pl' ? 'Analityka' : 'Analytics'}</TabsTrigger>
+          <TabsTrigger value="n8n">n8n MCP</TabsTrigger>
           <TabsTrigger value="phase2">Phase 2</TabsTrigger>
         </TabsList>
 
@@ -620,6 +624,16 @@ export default function TafePage() {
               <span className="text-muted-foreground truncate max-w-full">{a.reason}</span>
             </div>
           ))}
+        </TabsContent>
+
+        {/* ANALYTICS */}
+        <TabsContent value="analytics" className="mt-4">
+          <TafeRuleAnalytics rules={rules} runs={runs} audit={audit} lang={lang} />
+        </TabsContent>
+
+        {/* N8N MCP */}
+        <TabsContent value="n8n" className="mt-4">
+          <TafeN8nPanel lang={lang} />
         </TabsContent>
 
         {/* BENCHMARKS */}
