@@ -1,0 +1,20 @@
+INSERT INTO public.tafe_rules (rule_key, name, description, filter, severity, conditions, action, confidence_threshold, enabled, status)
+VALUES
+ ('r_injection_override', 'Nadpisanie instrukcji', 'Wykrywa próby unieważnienia wcześniejszych instrukcji systemowych.', 'F2', 'HIGH',
+  '[{"field":"content","op":"regex","value":"\\b(ignore|disregard|forget|zignoruj|zapomnij)\\b[\\s\\S]{0,40}\\b(previous|all|system|poprzednie|wszystkie)\\b[\\s\\S]{0,40}\\b(instructions?|rules?|prompt|polecenia|zasady)\\b"}]'::jsonb,
+  'BLOCK', 0.7, false, 'CANDIDATE'),
+ ('r_filter_bypass', 'Wyłączanie filtrów', 'Żądanie wyłączenia lub obejścia warstwy bezpieczeństwa.', 'F2', 'CRITICAL',
+  '[{"field":"content","op":"regex","value":"\\b(disable|bypass|turn off|wy[lł][aą]cz|obejd[zź])\\b[\\s\\S]{0,40}\\b(filter|safety|security|guardrail|filtr|zabezpieczen)"}]'::jsonb,
+  'BLOCK', 0.8, false, 'CANDIDATE'),
+ ('r_jailbreak_dan', 'Jailbreak / DAN', 'Znane wzorce trybu bez ograniczeń.', 'F2', 'HIGH',
+  '[{"field":"content","op":"regex","value":"\\b(dan mode|do anything now|developer mode|jailbreak|unrestricted mode|bez ogranicze[nń])\\b"}]'::jsonb,
+  'BLOCK', 0.7, false, 'CANDIDATE'),
+ ('r_privilege_escalation', 'Eskalacja uprawnień', 'Agent próbuje samodzielnie podnieść własne uprawnienia.', 'F3', 'CRITICAL',
+  '[{"field":"content","op":"regex","value":"\\b(grant yourself|elevate|sudo|admin rights|escalate|podnie[sś] uprawnienia|you are now root|act as an admin)\\b"}]'::jsonb,
+  'BLOCK', 0.8, false, 'CANDIDATE'),
+ ('r_destructive_tool', 'Narzędzie destrukcyjne', 'Tool-call kasujący lub wykonujący akcję nieodwracalną.', 'F3', 'HIGH',
+  '[{"field":"tool","op":"regex","value":"(delete|drop|purge|wipe|destroy|shell|exec)"}]'::jsonb,
+  'HUMAN_REVIEW', 0.6, false, 'CANDIDATE'),
+ ('r_secret_in_content', 'Sekret w treści', 'Klucz API lub token w przekazywanej treści.', 'F4', 'CRITICAL',
+  '[{"field":"content","op":"regex","value":"(sk-[A-Za-z0-9]{16,}|eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}|AKIA[0-9A-Z]{16})"}]'::jsonb,
+  'BLOCK', 0.9, false, 'CANDIDATE');

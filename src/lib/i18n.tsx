@@ -19,6 +19,7 @@ export const TRANSLATIONS: Dict = {
   'nav.incidents': { pl: 'Incydenty', en: 'Incidents' },
   'nav.llm': { pl: 'LLM Self-Test', en: 'LLM Self-Test' },
   'nav.diagnostics': { pl: 'Diagnostyka', en: 'Diagnostics' },
+  'nav.tafe': { pl: 'TAFE Engine', en: 'TAFE Engine' },
   'sidebar.subtitle': { pl: 'Pipeline Control', en: 'Pipeline Control' },
   'sidebar.footer': { pl: 'Pipeline niezależny od modelu', en: 'Model-agnostic pipeline' },
   'lang.label': { pl: 'Język', en: 'Language' },

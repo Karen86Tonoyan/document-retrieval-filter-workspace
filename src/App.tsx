@@ -19,6 +19,7 @@ const RC21DashboardPage = lazy(instrumentedLazyImport("RC21DashboardPage", () =>
 const FiltersDocsPage = lazy(instrumentedLazyImport("FiltersDocsPage", () => import("@/pages/FiltersDocsPage")));
 const SimulatorPage = lazy(instrumentedLazyImport("SimulatorPage", () => import("@/pages/SimulatorPage")));
 const SpecPage = lazy(instrumentedLazyImport("SpecPage", () => import("@/pages/SpecPage")));
+const TafePage = lazy(instrumentedLazyImport("TafePage", () => import("@/pages/TafePage")));
 const DiagnosticsPage = lazy(instrumentedLazyImport("DiagnosticsPage", () => import("@/pages/DiagnosticsPage")));
 const AuthPage = lazy(instrumentedLazyImport("AuthPage", () => import("@/pages/AuthPage")));
 const NotFound = lazy(instrumentedLazyImport("NotFound", () => import("./pages/NotFound.tsx")));
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/filters" element={<FiltersDocsPage />} />
               <Route path="/simulator" element={<SimulatorPage />} />
               <Route path="/spec" element={<SpecPage />} />
+              <Route path="/tafe" element={<TafePage />} />
               <Route path="/diagnostics" element={<DiagnosticsPage />} />
               <Route path="/auth" element={<AuthPage />} />
             </Route>
