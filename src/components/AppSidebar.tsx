@@ -1,24 +1,27 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Bot, Eye, BarChart3, AlertTriangle, MessageSquare, Brain, ShieldCheck, Filter, Sparkles, BookOpen, Activity } from 'lucide-react';
 import alfaWolfLogo from '@/assets/alfa-wolf-logo.png';
+import { useI18n } from '@/lib/i18n';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/rc21', icon: ShieldCheck, label: 'RC2.1 Safety' },
-  { to: '/filters', icon: Filter, label: 'Filtry — Docs' },
-  { to: '/spec', icon: BookOpen, label: 'Filter Spec' },
-  { to: '/simulator', icon: Sparkles, label: 'Symulator & NDI' },
-  { to: '/models', icon: Bot, label: 'Provider Manager' },
-  { to: '/analysis', icon: Eye, label: 'Live Analysis' },
-  { to: '/chat', icon: MessageSquare, label: 'Dual Chat' },
-  { to: '/benchmark', icon: BarChart3, label: 'Benchmark Lab' },
-  { to: '/incidents', icon: AlertTriangle, label: 'Incidents' },
-  { to: '/llm', icon: Brain, label: 'LLM Self-Test' },
-  { to: '/diagnostics', icon: Activity, label: 'Diagnostyka' },
+  { to: '/', icon: LayoutDashboard, key: 'nav.dashboard' },
+  { to: '/rc21', icon: ShieldCheck, key: 'nav.rc21' },
+  { to: '/filters', icon: Filter, key: 'nav.filters' },
+  { to: '/spec', icon: BookOpen, key: 'nav.spec' },
+  { to: '/simulator', icon: Sparkles, key: 'nav.simulator' },
+  { to: '/models', icon: Bot, key: 'nav.models' },
+  { to: '/analysis', icon: Eye, key: 'nav.analysis' },
+  { to: '/chat', icon: MessageSquare, key: 'nav.chat' },
+  { to: '/benchmark', icon: BarChart3, key: 'nav.benchmark' },
+  { to: '/incidents', icon: AlertTriangle, key: 'nav.incidents' },
+  { to: '/llm', icon: Brain, key: 'nav.llm' },
+  { to: '/diagnostics', icon: Activity, key: 'nav.diagnostics' },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
+  const { t } = useI18n();
 
   return (
     <aside className="w-64 min-h-screen bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -33,7 +36,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map(({ to, icon: Icon, label }) => {
+        {navItems.map(({ to, icon: Icon, key }) => {
           const isActive = location.pathname === to;
           return (
             <NavLink
@@ -46,16 +49,17 @@ export function AppSidebar() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              {t(key)}
             </NavLink>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-3">
+        <LanguageSwitcher />
         <div className="glass rounded-lg p-4">
           <p className="text-[10px] text-muted-foreground font-mono tracking-wide">LASUCH — CERBER — GUARDIAN</p>
-          <p className="text-[10px] text-muted-foreground mt-1">Model-agnostic pipeline</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{t('sidebar.footer')}</p>
         </div>
       </div>
     </aside>

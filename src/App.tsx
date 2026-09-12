@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import { instrumentedLazyImport } from "@/lib/diagnostics";
+import { I18nProvider } from "@/lib/i18n";
 
 const DashboardPage = lazy(instrumentedLazyImport("DashboardPage", () => import("@/pages/DashboardPage")));
 const ModelsPage = lazy(instrumentedLazyImport("ModelsPage", () => import("@/pages/ModelsPage")));
@@ -34,6 +35,7 @@ const RouteFallback = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <I18nProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -60,6 +62,7 @@ const App = () => (
         </Suspense>
       </BrowserRouter>
     </TooltipProvider>
+    </I18nProvider>
   </QueryClientProvider>
 );
 
