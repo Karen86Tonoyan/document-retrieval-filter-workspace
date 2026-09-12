@@ -36,3 +36,9 @@
 - [x] Naprawiono ReDoS (catastrophic backtracking) w regułach LANGUAGE_SWITCHING — długie wejścia liczone w ms zamiast sekund
 - [x] Admin UI: nadawanie ról provider/guest
 - [ ] Uwaga: linter zgłasza `has_role` jako SECURITY DEFINER dostępną dla zalogowanych — wymagane przez polityki RLS, ryzyko zaakceptowane
+
+## Panel TAFE — wizualizacje + n8n MCP
+- [ ] Wizualizacja regul F1-F7 i ich wplywu na decyzje
+- [ ] Wykresy TP/FP/precision/recall
+- [ ] Panel podlaczenia n8n MCP z modelami AI
+- [ ] Rejestracja pierwszego uzytkownika + rola provider, test zapisu propozycji regul
