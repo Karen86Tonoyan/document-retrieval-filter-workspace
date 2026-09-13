@@ -572,6 +572,34 @@ Deno.serve(async (req) => {
       return json({ ...decision, payload, brain_connected: Boolean(brainUrl) });
     }
 
+    /** ALFA Brain: evaluation of real F1–F7 tool-call traffic (aggregates only). */
+    if (path === '/brain/traffic' && req.method === 'POST') {
+      if (!isAdmin && !isProvider) return json({ error: 'Admin or provider role required' }, 403);
+      const parsed = z
+        .object({ window_hours: z.number().int().min(1).max(720).default(24) })
+        .safeParse(await req.json().catch(() => ({})));
+      if (!parsed.success) return json({ error: parsed.error.flatten().fieldErrors }, 400);
+      const verdict = await forwardTrafficToBrain(db, parsed.data.window_hours);
+      return json(verdict);
+    }
+
+    if (path === '/brain/status' && req.method === 'GET') {
+      const { data: last } = await db
+        .from('tafe_brain_evaluations')
+        .select('created_at, recommendation, rationale, candidate_id')
+        .eq('candidate_id', 'live_traffic')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return json({
+        brain_connected: Boolean(Deno.env.get('ALFA_BRAIN_URL')),
+        token_configured: Boolean(Deno.env.get('ALFA_BRAIN_TOKEN')),
+        last_traffic_evaluation: last ?? null,
+      });
+    }
+
+
+
     if (path === '/dashboard' && req.method === 'GET') {
       const [rulesRes, runsRes, patternsRes, promoRes] = await Promise.all([
         db.from('tafe_rules').select('status'),
