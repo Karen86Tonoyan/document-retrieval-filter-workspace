@@ -211,6 +211,73 @@ export default function TafeN8nPanel({ lang }: { lang: 'pl' | 'en' }) {
           />
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="n8n-payload" className="text-[11px] font-mono uppercase tracking-wider">
+            {lang === 'pl' ? 'Dane wejściowe workflow' : 'Workflow input payload'}
+          </Label>
+          <Textarea
+            id="n8n-payload"
+            rows={3}
+            className="font-mono text-xs"
+            value={payload}
+            onChange={(e) => setPayload(e.target.value)}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={runWorkflow} disabled={running}>
+            {running
+              ? lang === 'pl'
+                ? 'Sprawdzam bramkę…'
+                : 'Checking gate…'
+              : lang === 'pl'
+                ? 'Uruchom workflow przez bramkę TAFE'
+                : 'Run workflow through the TAFE gate'}
+          </Button>
+        </div>
+
+        {gate ? (
+          <div className="rounded-lg border border-border p-3 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={
+                  BLOCKING.includes(gate.decision)
+                    ? 'border-destructive/40 text-destructive bg-destructive/10 font-mono'
+                    : 'border-success/40 text-success bg-success/10 font-mono'
+                }
+              >
+                {gate.decision}
+              </Badge>
+              <span className="font-mono text-[11px] text-muted-foreground">risk {gate.risk.toFixed(2)}</span>
+              <span className="text-xs text-muted-foreground">{gate.reason}</span>
+            </div>
+            <div className="grid gap-1 sm:grid-cols-2">
+              {gate.filters.map((f) => (
+                <div key={f.filter} className="flex items-center justify-between rounded border border-border px-2 py-1 font-mono text-[11px]">
+                  <span>{f.filter}</span>
+                  <span className={BLOCKING.includes(f.decision) ? 'text-destructive' : 'text-muted-foreground'}>
+                    {f.decision} · {f.risk.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {runResult ? (
+              <p
+                className={
+                  runResult.status === 'BLOCKED'
+                    ? 'text-xs text-destructive'
+                    : runResult.status === 'ERROR'
+                      ? 'text-xs text-warning'
+                      : 'text-xs text-success'
+                }
+              >
+                {runResult.detail}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap gap-2">
           <Button onClick={save}>{lang === 'pl' ? 'Zapisz konfigurację' : 'Save configuration'}</Button>
           <Button variant="outline" onClick={clear}>
