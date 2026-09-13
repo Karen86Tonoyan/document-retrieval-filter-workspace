@@ -62,18 +62,20 @@ export default function TafePhase2({ me, rules }: Props) {
 
   const load = useCallback(async () => {
     try {
-      const [reg, dash, gs, sh, mat] = await Promise.all([
+      const [reg, dash, gs, sh, mat, bs] = await Promise.all([
         tafeApi.benchmarks(),
         tafeApi.dashboard(),
         tafeApi.goldsets(),
         tafeApi.shadow(),
         tafeApi.materials().catch(() => ({ cases: [] })),
+        tafeApi.brainStatus().catch(() => null),
       ]);
       setRegistry(reg);
       setStats(dash);
       setGoldsets(gs.cases);
       setShadow(sh.observations);
       setMaterials(mat.cases);
+      setBrainStatus(bs);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Błąd ładowania danych Phase 2');
     }
