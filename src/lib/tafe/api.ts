@@ -114,6 +114,9 @@ export const tafeApi = {
     call<SuiteResult>('/rules/suite', { method: 'POST', body: JSON.stringify({ rule_key }) }),
   brainEvaluate: (rule_key: string) =>
     call<BrainResult>('/brain/evaluate', { method: 'POST', body: JSON.stringify({ rule_key }) }),
+  brainTraffic: (window_hours = 24) =>
+    call<TrafficVerdict>('/brain/traffic', { method: 'POST', body: JSON.stringify({ window_hours }) }),
+  brainStatus: () => call<BrainStatus>('/brain/status'),
   proposeRule: (rule: ProposedRule) =>
     call<{ rule: RuleRow; note: string }>('/propose/rule', { method: 'POST', body: JSON.stringify(rule) }),
   submitMaterial: (cases: MaterialCase[]) =>
