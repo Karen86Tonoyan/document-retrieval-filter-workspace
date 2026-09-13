@@ -19,6 +19,7 @@ import {
 import { GOLDSETS, goldsetSignature } from '../_shared/tafe/goldsets.ts';
 import { ENGINE_VERSION, runCandidateSuite } from '../_shared/tafe/suite.ts';
 import { applyBrainRecommendation, buildBrainPayload, localBrainRecommendation } from '../_shared/tafe/brain.ts';
+import { forwardTrafficToBrain, maybeForwardTraffic } from '../_shared/tafe/traffic-brain.ts';
 import { summariseShadow } from '../_shared/tafe/shadow.ts';
 import { sha256 } from '../_shared/tafe/util.ts';
 import type { EvaluationKind, Rule } from '../_shared/tafe/types.ts';
@@ -212,10 +213,16 @@ Deno.serve(async (req) => {
       const parsed = EvaluateSchema.safeParse(await req.json().catch(() => ({})));
       if (!parsed.success) return json({ error: parsed.error.flatten().fieldErrors }, 400);
       const { dry_run, ...body } = parsed.data;
-      const result = await evaluate(
-        { ...body, kind: evalMatch[1] as EvaluationKind },
-        { db, actor: user.id, dryRun: dry_run === true },
-      );
+      const kind = evalMatch[1] as EvaluationKind;
+      const result = await evaluate({ ...body, kind }, { db, actor: user.id, dryRun: dry_run === true });
+
+      // Real tool/action traffic is streamed to ALFA Brain as aggregates (throttled).
+      if (!dry_run && (kind === 'tool' || kind === 'action')) {
+        const task = maybeForwardTraffic(db).catch(() => undefined);
+        const runtime = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } }).EdgeRuntime;
+        if (runtime?.waitUntil) runtime.waitUntil(task);
+        else await task;
+      }
       return json(result);
     }
 
