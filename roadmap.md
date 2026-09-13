@@ -11,7 +11,10 @@
 - [ ] Podłączenie panelu TAFE do API ALFA Brain i zapis ocen reguł w rejestrze wzorców
 - [ ] Wysłanie zdań z testów T9 na /evaluate/input i weryfikacja zapisu wzorców shadow
 - [ ] Zbiór realnych scenariuszy agentów i tool-calli do regresji F1–F7 przed aktywacją
-- [ ] TAFE jako bramka przed każdym tool-call agenta (decyzje F1–F7 sterują wykonaniem)
+- [x] TAFE jako bramka przed każdym tool-call agenta (decyzje F1–F7 sterują wykonaniem)
+- [x] Zapis decyzji F1–F7 z każdego tool-calla jako incydent + wysyłka agregatów do ALFA Brain (/brain/traffic)
+- [x] Uruchomienie workflow n8n przez bramkę TAFE (test zatrzymania akcji przed tool-callem)
+- [ ] Podłączenie rzeczywistego adresu API ALFA Brain i tokenu (ALFA_BRAIN_URL, ALFA_BRAIN_TOKEN)
 - [ ] Rozbudowa panelu o pamięć (historia decyzji/kontekstu widoczna w panelu)
 - [ ] Dual Chat: widok agenta z profilami F1–F7 i historią decyzji przed wykonaniem tool-calla
 
