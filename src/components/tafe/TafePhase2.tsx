@@ -13,6 +13,8 @@ import {
   tafeApi,
   type BenchmarkRegistry,
   type BrainResult,
+  type BrainStatus,
+  type TrafficVerdict,
   type DashboardStats,
   type Decision,
   type FilterId,
@@ -50,6 +52,8 @@ export default function TafePhase2({ me, rules }: Props) {
   const [shadow, setShadow] = useState<ShadowRow[]>([]);
   const [suite, setSuite] = useState<SuiteResult | null>(null);
   const [brain, setBrain] = useState<BrainResult | null>(null);
+  const [traffic, setTraffic] = useState<TrafficVerdict | null>(null);
+  const [brainStatus, setBrainStatus] = useState<BrainStatus | null>(null);
   const [ruleKey, setRuleKey] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
 
