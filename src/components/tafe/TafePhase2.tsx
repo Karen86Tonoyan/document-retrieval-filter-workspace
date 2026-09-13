@@ -13,6 +13,8 @@ import {
   tafeApi,
   type BenchmarkRegistry,
   type BrainResult,
+  type BrainStatus,
+  type TrafficVerdict,
   type DashboardStats,
   type Decision,
   type FilterId,
@@ -50,6 +52,8 @@ export default function TafePhase2({ me, rules }: Props) {
   const [shadow, setShadow] = useState<ShadowRow[]>([]);
   const [suite, setSuite] = useState<SuiteResult | null>(null);
   const [brain, setBrain] = useState<BrainResult | null>(null);
+  const [traffic, setTraffic] = useState<TrafficVerdict | null>(null);
+  const [brainStatus, setBrainStatus] = useState<BrainStatus | null>(null);
   const [ruleKey, setRuleKey] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -58,18 +62,20 @@ export default function TafePhase2({ me, rules }: Props) {
 
   const load = useCallback(async () => {
     try {
-      const [reg, dash, gs, sh, mat] = await Promise.all([
+      const [reg, dash, gs, sh, mat, bs] = await Promise.all([
         tafeApi.benchmarks(),
         tafeApi.dashboard(),
         tafeApi.goldsets(),
         tafeApi.shadow(),
         tafeApi.materials().catch(() => ({ cases: [] })),
+        tafeApi.brainStatus().catch(() => null),
       ]);
       setRegistry(reg);
       setStats(dash);
       setGoldsets(gs.cases);
       setShadow(sh.observations);
       setMaterials(mat.cases);
+      setBrainStatus(bs);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Błąd ładowania danych Phase 2');
     }
@@ -107,6 +113,21 @@ export default function TafePhase2({ me, rules }: Props) {
       toast.info(`ALFA Brain: ${res.recommendation} → ${res.resulting_status}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Błąd oceny Brain');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const runTrafficBrain = async () => {
+    setBusy('traffic');
+    try {
+      const res = await tafeApi.brainTraffic(24);
+      setTraffic(res);
+      const status = await tafeApi.brainStatus().catch(() => null);
+      if (status) setBrainStatus(status);
+      toast.info(`ALFA Brain — ruch: ${res.recommendation} (${res.calls} tool-calli)`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Błąd oceny ruchu w Brain');
     } finally {
       setBusy(null);
     }
@@ -392,8 +413,19 @@ export default function TafePhase2({ me, rules }: Props) {
 
       <TabsContent value="brain" className="mt-4 space-y-3">
         <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className={brainStatus?.brain_connected ? 'border-success/40 text-success' : 'border-muted-foreground/40 text-muted-foreground'}>
+            {brainStatus?.brain_connected ? 'ALFA Brain online' : 'Brain lokalny (brak adresu API)'}
+          </Badge>
+          {brainStatus?.brain_connected && !brainStatus.token_configured ? (
+            <Badge variant="outline" className="border-warning/40 text-warning">bez tokenu</Badge>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           <Button onClick={runBrain} disabled={!canRun || busy === 'brain' || !ruleKey}>
             {busy === 'brain' ? 'Oceniam…' : 'Oceń kandydata w ALFA Brain'}
+          </Button>
+          <Button variant="outline" onClick={runTrafficBrain} disabled={!canRun || busy === 'traffic'}>
+            {busy === 'traffic' ? 'Analizuję ruch…' : 'Oceń rzeczywisty ruch (F1–F7)'}
           </Button>
           <span className="text-xs text-muted-foreground">
             Brain dostaje wyłącznie agregaty. APPROVE daje maksymalnie NEEDS_REVIEW.
@@ -408,6 +440,33 @@ export default function TafePhase2({ me, rules }: Props) {
             <p className="text-xs text-muted-foreground">{brain.rationale}</p>
             <pre className="max-h-64 overflow-auto rounded bg-muted/40 p-2 font-mono text-[11px]">
               {JSON.stringify(brain.payload, null, 2)}
+            </pre>
+          </div>
+        ) : null}
+        {traffic ? (
+          <div className="rounded-lg border border-border p-3 space-y-2">
+            <p className="font-semibold">
+              Ruch produkcyjny: {traffic.recommendation}{' '}
+              <Badge variant="outline">{traffic.calls} tool-calli</Badge>{' '}
+              <Badge variant="outline">{traffic.brain_connected ? 'Brain online' : 'ocena lokalna'}</Badge>
+            </p>
+            <p className="text-xs text-muted-foreground">{traffic.rationale}</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {FILTERS.map((f) => {
+                const row = traffic.payload.filters[f];
+                if (!row) return null;
+                return (
+                  <div key={f} className="flex items-center justify-between rounded border border-border px-2 py-1 font-mono text-[11px]">
+                    <span>{f}</span>
+                    <span className="text-muted-foreground">
+                      {row.calls} wywołań · BLOCK {row.blocked} · HOLD {row.held} · risk {row.avg_risk.toFixed(2)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <pre className="max-h-64 overflow-auto rounded bg-muted/40 p-2 font-mono text-[11px]">
+              {JSON.stringify(traffic.payload, null, 2)}
             </pre>
           </div>
         ) : null}
