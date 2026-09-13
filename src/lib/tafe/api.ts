@@ -410,3 +410,35 @@ export interface MaterialCase {
   severity?: Severity;
   tags?: string[];
 }
+
+export interface TrafficPayload {
+  candidate_id: 'live_traffic';
+  window_hours: number;
+  calls: number;
+  decisions: Record<string, number>;
+  filters: Record<string, { calls: number; blocked: number; held: number; avg_risk: number }>;
+  agents: number;
+  block_rate: number;
+  human_review_rate: number;
+  top_codes: { code: string; count: number }[];
+  recommendation_request: 'traffic_review';
+}
+
+export interface TrafficVerdict {
+  recommendation: 'APPROVE' | 'REJECT' | 'HOLD';
+  rationale: string;
+  brain_connected: boolean;
+  calls: number;
+  payload: TrafficPayload;
+}
+
+export interface BrainStatus {
+  brain_connected: boolean;
+  token_configured: boolean;
+  last_traffic_evaluation: {
+    created_at: string;
+    recommendation: string;
+    rationale: string;
+    candidate_id: string;
+  } | null;
+}
