@@ -210,22 +210,43 @@ export async function lookupVerifiedPattern(
   return { decision: data.decision as Decision, risk: Number(data.risk) };
 }
 
+/**
+ * Every tool-call / action is recorded with its full F1–F7 decision trace (`force`),
+ * even when the gate allowed it — Brain evaluates real traffic, not only blocks.
+ */
 export async function recordIncident(
   db: SupabaseClient,
   req: EvaluationRequest,
   res: EvaluationResponse,
+  force = false,
 ): Promise<void> {
-  if (res.decision === 'ALLOW' || res.decision === 'WARN') return;
+  if (!force && (res.decision === 'ALLOW' || res.decision === 'WARN')) return;
   const worst = res.findings.find((f) => f.severity === 'CRITICAL') ?? res.findings[0];
+  const tool = typeof req.tool === 'string' ? req.tool : req.tool?.name ?? null;
+  const resource = typeof req.tool === 'string' ? null : req.tool?.resource ?? null;
   await db.from('tafe_incidents').insert({
     request_id: res.request_id,
     agent_id: req.agent,
     model: req.model,
     filter: worst?.filter ?? 'F7',
-    severity: worst?.severity ?? 'MEDIUM',
+    severity: worst?.severity ?? (res.decision === 'ALLOW' ? 'INFO' : 'MEDIUM'),
     decision: res.decision,
     reason: scrubSecrets(res.reason).slice(0, 2000),
-    findings: res.findings.map((f) => ({ code: f.code, filter: f.filter, severity: f.severity, message: f.message })),
+    findings: {
+      kind: req.kind,
+      tool,
+      resource,
+      risk: Number(res.risk.toFixed(4)),
+      requires_human: res.requires_human,
+      // Full F1–F7 decision trace for this call.
+      filters: res.filters.map((f) => ({
+        filter: f.filter,
+        decision: f.decision,
+        risk: Number(f.risk.toFixed(4)),
+        findings: f.findings.map((x) => x.code),
+      })),
+      items: res.findings.map((f) => ({ code: f.code, filter: f.filter, severity: f.severity, message: scrubSecrets(f.message).slice(0, 300) })),
+    },
   });
 }
 
