@@ -36,6 +36,15 @@ export const DEFAULT_GRANTS: AgentGrant[] = [
     denied_resources: ['secrets'],
     requires_confirmation_from: 'L2',
   },
+  {
+    // n8n workflows run as an automation agent: execute is allowed up to L3,
+    // destructive resources stay denied and every call is still filtered F1–F7.
+    agent: 'n8n-workflow',
+    max_level: 'L3',
+    allowed_tools: ['n8n.workflow.execute', 'search', 'read_file', 'fetch_url', 'summarize'],
+    denied_resources: ['secrets', 'auth', 'billing'],
+    requires_confirmation_from: 'L4',
+  },
 ];
 
 const OPERATION_LEVEL: Record<string, RiskLevel> = {
