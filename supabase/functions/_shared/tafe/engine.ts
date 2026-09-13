@@ -111,10 +111,14 @@ export async function evaluate(
 
   const worst = response.findings.find((f) => f.severity === 'CRITICAL') ?? response.findings[0];
 
+  // Every tool-call / action is an incident record carrying the full F1–F7 trace,
+  // regardless of the final decision — this is the traffic ALFA Brain evaluates.
+  const forceIncident = request.kind === 'tool' || request.kind === 'action';
+
   if (!dryRun) {
     await Promise.all([
       recordAudit(db, request, response, fp, actor).catch(() => undefined),
-      recordIncident(db, request, response).catch(() => undefined),
+      recordIncident(db, request, response, forceIncident).catch(() => undefined),
       updateAgentProfile(db, request, response).catch(() => undefined),
       recordShadowObservations(db, response.request_id, shadowObservations).catch(() => undefined),
       response.decision !== 'ALLOW'
