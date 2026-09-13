@@ -8,11 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { tafeApi, type EvaluationResponse } from '@/lib/tafe/api';
 
 const STORAGE_KEY = 'alfa_n8n_mcp_config';
 
 export interface N8nMcpConfig {
   mcpUrl: string;
+  webhookUrl: string;
   models: string;
   gateToolCalls: boolean;
   connected: boolean;
@@ -20,6 +23,7 @@ export interface N8nMcpConfig {
 
 const DEFAULT_CONFIG: N8nMcpConfig = {
   mcpUrl: '',
+  webhookUrl: '',
   models: 'google/gemini-2.5-flash, openai/gpt-5-mini',
   gateToolCalls: true,
   connected: false,
@@ -51,8 +55,68 @@ const STEPS_EN = [
   'AI models invoked by workflows pass the TAFE F1–F7 gate before any action runs.',
 ];
 
+const BLOCKING: string[] = ['HOLD', 'HUMAN_REVIEW', 'BLOCK'];
+
 export default function TafeN8nPanel({ lang }: { lang: 'pl' | 'en' }) {
   const [config, setConfig] = useState<N8nMcpConfig>(DEFAULT_CONFIG);
+  const [payload, setPayload] = useState('{"task":"summarize","input":"Raport tygodniowy"}');
+  const [gate, setGate] = useState<EvaluationResponse | null>(null);
+  const [runResult, setRunResult] = useState<{ status: 'BLOCKED' | 'EXECUTED' | 'ERROR'; detail: string } | null>(null);
+  const [running, setRunning] = useState(false);
+
+  /** TAFE gate: F1-F7 decide BEFORE the workflow (tool-call) is executed. */
+  const runWorkflow = async () => {
+    const hook = config.webhookUrl.trim();
+    if (!/^https:\/\/[^\s]+$/i.test(hook)) {
+      toast.error(lang === 'pl' ? 'Podaj poprawny adres HTTPS webhooka n8n.' : 'Enter a valid HTTPS n8n webhook URL.');
+      return;
+    }
+    setRunning(true);
+    setGate(null);
+    setRunResult(null);
+    try {
+      const decision = await tafeApi.evaluate('tool', {
+        agent: 'n8n-workflow',
+        model: config.models.split(',')[0]?.trim() || 'unknown',
+        content: payload.slice(0, 8000),
+        tool: { name: 'n8n.workflow.execute', operation: 'execute', resource: hook },
+        context: { source: 'n8n', mcp_url: config.mcpUrl || null },
+      });
+      setGate(decision);
+
+      if (config.gateToolCalls && BLOCKING.includes(decision.decision)) {
+        setRunResult({
+          status: 'BLOCKED',
+          detail:
+            lang === 'pl'
+              ? `Akcja zatrzymana przed tool-callem: ${decision.decision}. ${decision.reason}`
+              : `Action stopped before the tool call: ${decision.decision}. ${decision.reason}`,
+        });
+        toast.error(lang === 'pl' ? `Bramka TAFE: ${decision.decision}` : `TAFE gate: ${decision.decision}`);
+        return;
+      }
+
+      let body = '';
+      try {
+        const res = await fetch(hook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+        });
+        body = (await res.text()).slice(0, 1000);
+        setRunResult({ status: res.ok ? 'EXECUTED' : 'ERROR', detail: `HTTP ${res.status} — ${body}` });
+        if (res.ok) toast.success(lang === 'pl' ? 'Workflow uruchomiony po przejściu bramki.' : 'Workflow executed after passing the gate.');
+        else toast.error(`n8n HTTP ${res.status}`);
+      } catch (err) {
+        setRunResult({ status: 'ERROR', detail: err instanceof Error ? err.message : String(err) });
+        toast.error(lang === 'pl' ? 'Nie udało się wywołać webhooka n8n.' : 'Could not reach the n8n webhook.');
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Błąd bramki TAFE');
+    } finally {
+      setRunning(false);
+    }
+  };
 
   useEffect(() => setConfig(readConfig()), []);
 
@@ -104,6 +168,17 @@ export default function TafeN8nPanel({ lang }: { lang: 'pl' | 'en' }) {
               placeholder="https://your-instance.app.n8n.cloud/mcp-server/http"
               value={config.mcpUrl}
               onChange={(e) => setConfig((c) => ({ ...c, mcpUrl: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="n8n-webhook" className="text-[11px] font-mono uppercase tracking-wider">
+              {lang === 'pl' ? 'Webhook workflow (test bramki)' : 'Workflow webhook (gate test)'}
+            </Label>
+            <Input
+              id="n8n-webhook"
+              placeholder="https://your-instance.app.n8n.cloud/webhook/alfa-test"
+              value={config.webhookUrl}
+              onChange={(e) => setConfig((c) => ({ ...c, webhookUrl: e.target.value }))}
             />
           </div>
           <div className="space-y-1.5">
